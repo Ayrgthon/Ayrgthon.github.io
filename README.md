@@ -69,8 +69,10 @@ El objetivo central es comprender y prever la distribución espacial de las espe
 
 
 1. Preparación de Datos.
+2. 
 1.1 Funciones Auxiliares
 En esta sección se definieron funciones auxiliares para mejorar la legibilidad del código y facilitar la preparación de datos. Estas funciones realizan tareas como listar variables en un directorio, generar puntos aleatorios en un GeoDataFrame, crear puntos de ausencia alrededor de áreas de presencia, contar especies por mes y año, y generar rutas a archivos de datos biológicos para un mes específico.
+
 1.2 Clase Dataset
 La clase Dataset se encarga de la preparación de datos. En el método __init__, se inicializa la clase con un DataFrame y el nombre de la especie. El método Preprocessing realiza la preparación inicial, filtrando por especie y generando un diccionario de coordenadas para cada fecha única. El método LogitPreprocess realiza un preprocesamiento específico para la regresión logística, incluyendo la creación de puntos de ausencia y la obtención de datos biológicos. Finalmente, dataset_creation crea un conjunto de datos codificado para la regresión logística, incorporando variables dummy para la categoría de monitoreo.
 
@@ -78,6 +80,7 @@ La clase Dataset se encarga de la preparación de datos. En el método __init__,
 
 En esta fase, se realizó la división del conjunto de datos en variables explicativas (X) y la variable objetivo (y). La variable objetivo representa la presencia o ausencia de la especie en cuestión. Se procedió a estandarizar las características, un paso crucial para garantizar que todas las variables tengan la misma escala. Esto es esencial para modelos que dependen de medidas de distancia, como la regresión logística y el soporte vectorial.
 La división de los datos en conjuntos de entrenamiento y prueba permite evaluar la capacidad de generalización del modelo. El conjunto de entrenamiento se utiliza para entrenar el modelo, y el conjunto de prueba se reserva para evaluar su rendimiento en datos no vistos.
+
 3. Entrenamiento de Modelos.
 Búsqueda en Cuadrícula (Grid Search)
 La búsqueda en cuadrícula es una técnica utilizada para ajustar los hiper parámetros de un modelo. Los hiper parámetros son configuraciones externas al modelo que afectan su rendimiento. En este proyecto, se aplicó la búsqueda en cuadrícula para encontrar la combinación óptima de hiper parámetros para cada modelo. La búsqueda se realiza evaluando el rendimiento del modelo en un conjunto de validación mediante validación cruzada.
@@ -85,6 +88,7 @@ Validación Cruzada Estratificada (Stratified K-Fold)
 La validación cruzada estratificada es una técnica de validación cruzada que garantiza una distribución equitativa de las clases en cada fold. Dado que el conjunto de datos puede tener clases desequilibradas (presencia y ausencia de especies), la estratificación ayuda a prevenir problemas en los que una clase podría quedar subrepresentada en ciertos folds. En este caso, se utilizó una validación cruzada estratificada de 10 folds para evaluar los modelos de manera robusta.
 Elección de Métrica: AUC-ROC
 La métrica seleccionada para evaluar el rendimiento del modelo fue el Área Bajo la Curva de Características Operativas del Receptor (AUC-ROC). La curva ROC representa la tasa de verdaderos positivos frente a la tasa de falsos positivos en diferentes umbrales de clasificación. El AUC-ROC mide la capacidad del modelo para distinguir entre clases positivas y negativas. Un valor de AUC cercano a 1 indica un buen rendimiento, mientras que 0.5 indica un rendimiento aleatorio.
+
 4. Evaluación de Modelos.
 
 En esta sección, la elección de la métrica AUC-ROC como medida de rendimiento tiene una conexión directa con la formulación del problema y la inspiración tomada de modelos como MaxEnt y la regresión logística.
@@ -99,12 +103,17 @@ La probabilidad condicional es fundamental en este contexto, ya que destaca la d
 5. Proceso de Inferencia y Generación de Mapas.
 
 El proceso de inferencia y generación de mapas se realiza en varias etapas, desde el muestreo aleatorio del espacio del Cerrejón hasta la exportación de datos para su visualización en Tableau. Aquí se detalla cada paso:
-5.1 Muestreo Aleatorio del Espacio del Cerrejón
+
+5.1 Muestreo Aleatorio del Espacio del Cerrejón.
+
 Se realiza un muestreo aleatorio del espacio del Cerrejón utilizando geometrías del conjunto de datos CNAT. Las coordenadas resultantes se almacenan en un DataFrame, y se generan puntos de ausencia alrededor de estas coordenadas utilizando la función create_absence_points.
-5.2 Rasterización de Variables Climáticas
+5.2 Rasterización de Variables Climáticas.
+
 Se rasterizan las variables climáticas en función de las coordenadas generadas. Se utiliza la función rasterio.open para leer archivos raster y muestrear valores en las coordenadas seleccionadas. Los datos resultantes se incorporan al DataFrame para su posterior procesamiento.
-5.3 Predicción de P(y=1|x)
+5.3 Predicción de P(y=1|x).
+
 Utilizando los mejores modelos entrenados en la sección anterior, se realiza la predicción de la probabilidad condicional P(y=1∣x) para cada punto en el espacio del Cerrejón. Se utiliza un conjunto de variables climáticas como entrada para los modelos, y las predicciones se combinan en un conjunto final.
-5.4 Exportación de Datos para el Heatmap en Tableau
+5.4 Exportación de Datos para el Heatmap en Tableau.
+
 Los resultados de la inferencia, incluidas las coordenadas, las probabilidades predichas y las variables climáticas, se exportan a un archivo CSV llamado "ProbDist.csv". Este archivo se prepara para su uso en Tableau, donde se puede crear un heatmap para visualizar la distribución de probabilidades de presencia de la especie en el espacio del Cerrejón.
 Este enfoque integral, desde el muestreo hasta la exportación de datos, permite una visualización efectiva de las probabilidades de presencia de la especie en el contexto geoespacial del Cerrejón. El uso de herramientas como Folium y la exportación de datos estructurados facilitan la creación de visualizaciones ricas e informativas.
