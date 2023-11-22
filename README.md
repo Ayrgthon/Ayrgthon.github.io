@@ -1,3 +1,7 @@
+#### Nota: para Acceder al Dashboard, ingrese al siguiente enlance, ademas, por favor, usar la opcion de pantalla completa que encontrara en la zona inferior derecha de la pantalla para ajustar el tamaño del Dashboard al dispositivo.
+
+https://ayrgthon.github.io/dcp.html
+
 # Explorando la Riqueza Natural de La Guajira: Un Proyecto de Visualización Dinámica para Analizar y Conservar Especies en Peligro a través de un Tablero Interactivo de Biodiversidad
 
 ## Descripción:
