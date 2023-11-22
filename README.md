@@ -33,17 +33,17 @@ Maicao: 132 individuos y 73 especies
 Composición de Especies:
 
 En el primer gráfico, se exhibe una representación de barras que detalla las 11 clases más prevalentes en diversas regiones de zonas de extracción minera. Esta información reviste una importancia fundamental para evaluar y gestionar la peligrosidad de los impactos de la actividad minera en estas especies. Para un análisis más detallado sobre la distribución de dichas especies, se proporciona información adicional en el apartado dedicado a las "Especies".
-1.       Gonatodes vittatus
-2.       Lepidoblepharis sanctaemartae
-3.       Cnemidophorus  lemniscatus 
-4.       Ameiva bifrontata
-5.       Engystomops pustulosus  
-6.       Anolis auratus
-7.       Rhinella humboldti
-8.       Polioptila plumbea 
-9.       Alouatta seniculus
-10.         Furnarius leucopus
-11.      Cerdocyon Thous 
+1. Gonatodes vittatus
+2. Lepidoblepharis sanctaemartae
+3. Cnemidophorus  lemniscatus 
+4. Ameiva bifrontata
+5. Engystomops pustulosus  
+6. Anolis auratus
+7. Rhinella humboldti
+8. Polioptila plumbea 
+9. Alouatta seniculus
+10. Furnarius leucopus
+11. Cerdocyon Thous 
 
 Información Detallada por Región:
 Al seleccionar una región específica, el dashboard proporciona información especializada para el área escogida, incluyendo:
