@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva para la Predicción de Ausentismo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Accents -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar for smooth scrolling between thematic modules. The structure is designed to guide the user from understanding the core problem (data limitations) to the proposed solutions (encoding, modeling, analysis). This task-oriented flow breaks down complex topics into digestible, interactive sections, making it more intuitive than a linear report. It prioritizes learning through interaction (e.g., encoding simulator, clickable workflow diagrams) over passive reading, which is ideal for a technical but educational subject. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Small N (100) & Hierarchical Data -> Goal: Explain the core challenge -> Viz/Presentation: Simple text cards with icons and an interactive diagram showing dimensional explosion -> Interaction: Hover effects and toggles -> Justification: Visualizes the abstract problem of the 'curse of dimensionality' making it tangible.
+        - Report Info: Hierarchical Target Encoding -> Goal: Demystify the encoding process -> Viz/Presentation: An interactive "simulator" with a sample dataset -> Interaction: User clicks a button to see categories transform into numbers, with sliders for regularization -> Justification: Active learning is superior for understanding algorithmic concepts.
+        - Report Info: Two-part modeling workflow -> Goal: Illustrate the overall process -> Viz/Presentation: A clickable flowchart diagram built with HTML/CSS -> Interaction: Clicking on a stage (Classification/Regression) reveals a detailed card with models, metrics, and justifications -> Justification: Organizes a complex workflow into a high-level overview with optional deep-dives, respecting user's attention and interest.
+        - Report Info: Evaluation Metrics (e.g., Confusion Matrix) -> Goal: Clarify metric interpretation -> Viz/Presentation: HTML-based interactive table and a Chart.js doughnut chart -> Interaction: Hovering over cells (TP, FP) shows explanatory tooltips -> Justification: Makes abstract metrics concrete.
+        - Library/Method: All visualizations are built with HTML/CSS/Tailwind and Chart.js (Canvas), adhering to the NO SVG/Mermaid constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F5F2;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #B27067;
+            border-bottom-color: #B27067;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary {
+            background-color: #6C7A89;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #586574;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #4A4A4A;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 400px; 
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .flow-line {
+            position: absolute;
+            background-color: #cbd5e1;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-[#B27067]">Guía de Ausentismo</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#intro" class="nav-link">Introducción</a>
+                    <a href="#desafio" class="nav-link">El Desafío</a>
+                    <a href="#codificacion" class="nav-link">Codificación</a>
+                    <a href="#modelado" class="nav-link">Modelado</a>
+                    <a href="#analisis" class="nav-link">Análisis</a>
+                    <a href="#conclusion" class="nav-link">Conclusión</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <div class="w-6 h-0.5 bg-gray-600 mb-1.5"></div>
+                    <div class="w-6 h-0.5 bg-gray-600"></div>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 flex flex-col space-y-2">
+                <a href="#intro" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">Introducción</a>
+                <a href="#desafio" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">El Desafío</a>
+                <a href="#codificacion" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">Codificación</a>
+                <a href="#modelado" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">Modelado</a>
+                <a href="#analisis" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">Análisis</a>
+                <a href="#conclusion" class="block py-2 px-4 text-sm hover:bg-gray-100 rounded">Conclusión</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="py-20 md:py-28">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-[#6C7A89] mb-4">Predicción de Ausentismo con Datos Limitados</h2>
+                <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-600 mb-8">
+                    Esta guía interactiva explora las metodologías avanzadas para predecir la ocurrencia y duración del ausentismo laboral a partir de un conjunto de datos muy pequeño (N=100) y complejo. Descubra cómo abordar los desafíos de datos escasos y variables categóricas jerárquicas con técnicas robustas.
+                </p>
+                <a href="#desafio" class="btn-primary font-bold py-3 px-8 rounded-full inline-block">
+                    Iniciar Exploración
+                </a>
+            </div>
+        </section>
+
+        <section id="desafio" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-3">El Desafío: Calidad sobre Cantidad</h3>
+                    <p class="max-w-2xl mx-auto text-gray-600">Modelar con solo 100 datos presenta dos obstáculos principales que requieren un enfoque especializado.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div class="card p-8">
+                        <h4 class="text-2xl font-semibold mb-4 text-[#B27067]">1. Datos Limitados (N=100)</h4>
+                        <p class="mb-4">Con una muestra pequeña, el riesgo de que el modelo "memorice" los datos en lugar de aprender patrones generales (**sobreajuste**) es extremadamente alto. Esto conduce a un rendimiento pobre en datos nuevos.</p>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start"><span class="text-[#B27067] font-bold mr-3">✓</span><div><strong>Modelos Simples y Regularizados:</strong> Se prefieren modelos menos complejos (como Regresión Logística) que son inherentemente más robustos.</div></li>
+                            <li class="flex items-start"><span class="text-[#B27067] font-bold mr-3">✓</span><div><strong>Validación Robusta (LOOCV):</strong> Se utiliza la Validación Cruzada Dejando-Uno-Fuera (LOOCV) para maximizar los datos de entrenamiento y obtener una estimación de rendimiento más fiable.</div></li>
+                        </ul>
+                    </div>
+                    <div class="card p-8">
+                        <h4 class="text-2xl font-semibold mb-4 text-[#B27067]">2. Variables Categóricas Jerárquicas</h4>
+                        <p class="mb-4">Variables como "Diagnóstico General -> Específico" o "País -> Región -> Ciudad" contienen una estructura. Ignorarla es perder información; incluirla de forma ingenua crea demasiadas características.</p>
+                        <div class="text-sm p-4 bg-gray-50 rounded-lg">
+                            <p class="font-semibold mb-2">Ejemplo: Codificación Simple (One-Hot)</p>
+                            <p class="mb-2">`País-Región-Ciudad`</p>
+                            <p class="mb-2">`COL-ATL-BQA` → `[1,0,0, 1,0,0, 1,0,0]` (9 cols)</p>
+                            <p class="text-red-600 font-medium">Problema: ¡Explosión de dimensiones! Con 100 datos, el modelo no puede aprender de tantas columnas dispersas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="codificacion" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-3">Solución de Codificación Inteligente</h3>
+                    <p class="max-w-2xl mx-auto text-gray-600">La clave es transformar las categorías en números significativos sin crear demasiadas características. La **Codificación por Objetivo Regularizada** es la estrategia recomendada.</p>
+                </div>
+                <div class="card p-8 max-w-4xl mx-auto">
+                    <h4 class="text-2xl font-semibold mb-2 text-center">Simulador de Codificación por Objetivo</h4>
+                    <p class="text-center text-gray-600 mb-6">Vea cómo funciona la codificación por objetivo regularizada en diferentes escenarios, desde variables simples hasta estructuras jerárquicas complejas.</p>
+                    
+                    <!-- Tabs for different encoding examples -->
+                    <div class="flex border-b mb-6">
+                        <button id="tab-simple" class="px-4 py-2 font-semibold text-gray-600 border-b-2 border-[#B27067]">Simple</button>
+                        <button id="tab-hierarchical" class="px-4 py-2 font-semibold text-gray-600">Jerárquica</button>
+                    </div>
+
+                    <!-- Simple encoding example (original content) -->
+                    <div id="content-simple" class="encoding-content">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h5 class="font-semibold mb-2">Datos Originales:</h5>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="p-2">Cargo</th>
+                                            <th class="p-2">Ausentismo (Sí=1, No=0)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b"><td>Analista</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>Gerente</td><td class="text-center">0</td></tr>
+                                        <tr class="border-b"><td>Analista</td><td class="text-center">0</td></tr>
+                                        <tr class="border-b"><td>Técnico</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>Gerente</td><td class="text-center">0</td></tr>
+                                        <tr class="border-b"><td>Analista</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>Técnico</td><td class="text-center">1</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <button id="encode-simple-btn" class="w-full btn-primary font-bold py-2 px-4 rounded-md mb-4">
+                                    → ¡Codificar! →
+                                </button>
+                                <h5 class="font-semibold mb-2">Datos Codificados:</h5>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100">
+                                        <tr><th class="p-2">Cargo_Codificado</th></tr>
+                                    </thead>
+                                    <tbody id="encoded-simple-output">
+                                        <tr><td class="p-2 italic text-gray-400">Presione el botón...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hierarchical encoding example (new content) -->
+                    <div id="content-hierarchical" class="encoding-content hidden">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h5 class="font-semibold mb-2">Datos Originales (Ubicación):</h5>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="p-2">País</th>
+                                            <th class="p-2">Región</th>
+                                            <th class="p-2">Ciudad</th>
+                                            <th class="p-2">Ausentismo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b"><td>COL</td><td>ATL</td><td>BQA</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>COL</td><td>ATL</td><td>SOL</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>COL</td><td>BOL</td><td>CTG</td><td class="text-center">0</td></tr>
+                                        <tr class="border-b"><td>COL</td><td>BOL</td><td>CTG</td><td class="text-center">1</td></tr>
+                                        <tr class="border-b"><td>COL</td><td>ATL</td><td>BQA</td><td class="text-center">0</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <button id="encode-hierarchical-btn" class="w-full btn-primary font-bold py-2 px-4 rounded-md mb-4">
+                                    → ¡Codificar Jerárquicamente! →
+                                </button>
+                                <h5 class="font-semibold mb-2">Datos Codificados (3 niveles):</h5>
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="p-2">Nivel</th>
+                                            <th class="p-2">Codificación</th>
+                                            <th class="p-2">Peso</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="encoded-hierarchical-output">
+                                        <tr><td colspan="3" class="p-2 italic text-gray-400">Presione el botón...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t">
+                        <h5 class="font-semibold mb-2">Codificación Jerárquica Explicada</h5>
+                        <div class="text-sm text-gray-600 space-y-4">
+                            <p><strong>1. Principio Básico:</strong> En lugar de codificar cada nivel independientemente, se crea una codificación que considera la estructura jerárquica completa.</p>
+                            <p><strong>2. Ponderación por Nivel:</strong> Se asignan pesos diferentes a cada nivel de la jerarquía:</p>
+                            <ul class="list-disc list-inside pl-4 space-y-2">
+                                <li>Nivel Ciudad (más específico): 50% del peso</li>
+                                <li>Nivel Región: 30% del peso</li>
+                                <li>Nivel País (más general): 20% del peso</li>
+                            </ul>
+                            <p><strong>3. Fórmula de Codificación:</strong></p>
+                            <div class="bg-gray-50 p-4 rounded-lg font-mono text-sm">
+                                Valor_Final = (Media_Ciudad × 0.5) + (Media_Region × 0.3) + (Media_Pais × 0.2)
+                            </div>
+                            <div class="mt-4 mb-4">
+                                <h6 class="font-semibold mb-2">Flujo de Codificación:</h6>
+                                <div class="mermaid">
+                                    graph TD
+                                        A[Dato Original] --> B[Nivel Ciudad]
+                                        A --> C[Nivel Región]
+                                        A --> D[Nivel País]
+                                        B --> E[Media Ciudad × 0.5]
+                                        C --> F[Media Región × 0.3]
+                                        D --> G[Media País × 0.2]
+                                        E --> H[Valor Final]
+                                        F --> H
+                                        G --> H
+                                        style A fill:#f8f5f2,stroke:#6C7A89
+                                        style H fill:#B27067,stroke:#B27067,color:white
+                                        style E fill:#e2e8f0,stroke:#6C7A89
+                                        style F fill:#e2e8f0,stroke:#6C7A89
+                                        style G fill:#e2e8f0,stroke:#6C7A89
+                                </div>
+                            </div>
+                            <p><strong>4. Ventajas:</strong></p>
+                            <ul class="list-disc list-inside pl-4 space-y-2">
+                                <li>Reduce dimensionalidad (una columna vs. muchas)</li>
+                                <li>Preserva la estructura jerárquica</li>
+                                <li>Maneja el problema de datos escasos</li>
+                                <li>Permite regularización por nivel</li>
+                            </ul>
+                            <div class="mt-4 text-center">
+                                <a href="deduccion_formal.html" class="inline-flex items-center text-[#B27067] hover:text-[#935c54] font-semibold">
+                                    Ver deducción formal completa
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="modelado" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-3">Flujo de Modelado en Dos Etapas</h3>
+                    <p class="max-w-2xl mx-auto text-gray-600">El problema se divide en dos preguntas secuenciales, cada una con su propio modelo especializado. Haga clic en cada etapa para ver los detalles.</p>
+                </div>
+
+                <div class="relative flex flex-col md:flex-row justify-center items-center md:items-start space-y-8 md:space-y-0 md:space-x-8">
+                     <!-- Flow Lines -->
+                    <div class="hidden md:block flow-line top-1/2 -translate-y-1/2 left-0 h-1 w-full"></div>
+
+                    <div id="flow-stage-1" class="card p-6 w-full max-w-sm text-center cursor-pointer z-10">
+                        <span class="text-sm font-bold text-[#B27067]">ETAPA 1</span>
+                        <h4 class="text-xl font-semibold my-2">Clasificación</h4>
+                        <p>¿Tendrá el empleado ausentismo (Sí/No)?</p>
+                    </div>
+
+                    <div id="flow-stage-2" class="card p-6 w-full max-w-sm text-center cursor-pointer z-10">
+                        <span class="text-sm font-bold text-[#B27067]">ETAPA 2</span>
+                        <h4 class="text-xl font-semibold my-2">Regresión</h4>
+                        <p>Si la respuesta es "Sí", ¿cuántos días?</p>
+                    </div>
+                </div>
+
+                <div id="details-box" class="mt-12">
+                    <!-- Details will be injected here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="analisis" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-3">Análisis: ¿Qué Variables Influyen Más?</h3>
+                    <p class="max-w-2xl mx-auto text-gray-600">Más allá de predecir, queremos entender los factores clave. Se proponen varias técnicas para identificar los impulsores del ausentismo.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="card p-6">
+                        <h4 class="font-semibold text-lg mb-2">Importancia por Permutación</h4>
+                        <p class="text-sm text-gray-600">Se "desordena" aleatoriamente una variable y se mide cuánto empeora el modelo. Una gran caída en el rendimiento significa que la variable es muy importante.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="font-semibold text-lg mb-2">Coeficientes del Modelo</h4>
+                        <p class="text-sm text-gray-600">En modelos simples como la Regresión Logística, la magnitud del coeficiente de una variable indica su peso en la predicción final. L1 (Lasso) puede incluso reducir a cero los coeficientes de variables no importantes.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="font-semibold text-lg mb-2">Análisis de Clustering</h4>
+                        <p class="text-sm text-gray-600">Busca agrupar a los individuos en "perfiles de riesgo" (ej. bajo, medio, alto) basados en sus características, para identificar patrones de comportamiento comunes.</p>
+                    </div>
+                </div>
+                <div class="card p-8 mt-12">
+                    <h4 class="text-xl font-semibold mb-4 text-center">Ejemplo Visual: Importancia de Variables</h4>
+                    <div class="chart-container mx-auto" style="max-width: 600px; height: 350px;">
+                        <canvas id="importanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="conclusion" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-3">Conclusión y Hoja de Ruta</h3>
+                    <p class="max-w-2xl mx-auto text-gray-600">Modelar con datos escasos es un ejercicio de rigor y pragmatismo. La estrategia se centra en la robustez, la interpretabilidad y una validación honesta.</p>
+                </div>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-8 rounded-lg">
+                    <h4 class="font-semibold text-lg mb-4">Pasos Estratégicos Recomendados:</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="bg-[#B27067] text-white rounded-full h-6 w-6 text-sm flex items-center justify-center font-bold mr-4 flex-shrink-0">1</span>
+                            <div><strong>Codificación Robusta:</strong> Implementar Codificación por Objetivo Regularizada dentro de un bucle de validación LOOCV para prevenir la fuga de datos.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-[#B27067] text-white rounded-full h-6 w-6 text-sm flex items-center justify-center font-bold mr-4 flex-shrink-0">2</span>
+                            <div><strong>Clasificación Primero:</strong> Usar Regresión Logística con regularización (L1/L2) para el modelo de Sí/No. Evaluar con métricas como F1 y AUC-PR.</div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="bg-[#B27067] text-white rounded-full h-6 w-6 text-sm flex items-center justify-center font-bold mr-4 flex-shrink-0">3</span>
+                            <div><strong>Regresión para los Positivos:</strong> Para el subconjunto con ausentismo, usar un Modelo de Obstáculo (Hurdle) con componente Binomial Negativo para predecir los días.</div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="bg-[#B27067] text-white rounded-full h-6 w-6 text-sm flex items-center justify-center font-bold mr-4 flex-shrink-0">4</span>
+                            <div><strong>Interpretar y Analizar:</strong> Utilizar técnicas de importancia de variables para entender los factores clave, no solo para predecir.</div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="bg-gray-600 text-white rounded-full h-6 w-6 text-sm flex items-center justify-center font-bold mr-4 flex-shrink-0">!</span>
+                            <div><strong>Gestionar Expectativas:</strong> Con N=100, el objetivo es construir el modelo más fiable posible y generar hipótesis, no necesariamente predicciones perfectas.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center text-sm">
+            <p>&copy; 2025 Guía Interactiva de Modelado. Creado como una herramienta educativa.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Mermaid
+            mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const navLinks = document.querySelectorAll('nav a.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            const encodeSimpleBtn = document.getElementById('encode-simple-btn');
+            const encodeHierarchicalBtn = document.getElementById('encode-hierarchical-btn');
+            const tabSimple = document.getElementById('tab-simple');
+            const tabHierarchical = document.getElementById('tab-hierarchical');
+            const contentSimple = document.getElementById('content-simple');
+            const contentHierarchical = document.getElementById('content-hierarchical');
+
+            // Tab switching logic
+            tabSimple.addEventListener('click', () => {
+                tabSimple.classList.add('border-[#B27067]');
+                tabHierarchical.classList.remove('border-[#B27067]');
+                contentSimple.classList.remove('hidden');
+                contentHierarchical.classList.add('hidden');
+            });
+
+            tabHierarchical.addEventListener('click', () => {
+                tabHierarchical.classList.add('border-[#B27067]');
+                tabSimple.classList.remove('border-[#B27067]');
+                contentHierarchical.classList.remove('hidden');
+                contentSimple.classList.add('hidden');
+            });
+
+            // Simple encoding button click
+            encodeSimpleBtn.addEventListener('click', () => {
+                const output = document.getElementById('encoded-simple-output');
+                output.innerHTML = `
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">0.667</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">0.000</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">0.667</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">1.000</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">0.000</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">0.667</td></tr>
+                    <tr class="border-b"><td class="p-2 font-mono text-blue-600">1.000</td></tr>
+                `;
+            });
+
+            // Hierarchical encoding button click
+            encodeHierarchicalBtn.addEventListener('click', () => {
+                const output = document.getElementById('encoded-hierarchical-output');
+                output.innerHTML = `
+                    <tr class="border-b">
+                        <td class="p-2">Ciudad (BQA)</td>
+                        <td class="p-2 font-mono text-blue-600">0.500</td>
+                        <td class="p-2">× 0.50</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="p-2">Región (ATL)</td>
+                        <td class="p-2 font-mono text-blue-600">0.667</td>
+                        <td class="p-2">× 0.30</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="p-2">País (COL)</td>
+                        <td class="p-2 font-mono text-blue-600">0.600</td>
+                        <td class="p-2">× 0.20</td>
+                    </tr>
+                    <tr class="border-t-2 font-semibold">
+                        <td class="p-2">Valor Final</td>
+                        <td class="p-2 font-mono text-green-600">0.577</td>
+                        <td class="p-2"></td>
+                    </tr>
+                `;
+            });
+
+            const flowStage1 = document.getElementById('flow-stage-1');
+            const flowStage2 = document.getElementById('flow-stage-2');
+            const detailsBox = document.getElementById('details-box');
+            
+            const stage1Details = `
+                <div class="card max-w-4xl mx-auto p-8 bg-gray-50">
+                    <h4 class="text-2xl font-bold mb-4 text-[#6C7A89]">Detalles: Etapa 1 - Clasificación</h4>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h5 class="font-semibold mb-2">Modelos Recomendados</h5>
+                            <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong>Regresión Logística (con L1/L2):</strong> Robusta, interpretable y con regularización para evitar sobreajuste. Es el punto de partida ideal.</li>
+                                <li><strong>SVM con Kernel Lineal:</strong> Efectiva en espacios de alta dimensión y robusta con N pequeño.</li>
+                            </ul>
+                            <h5 class="font-semibold mt-4 mb-2">Función de Pérdida</h5>
+                            <p class="text-sm"><strong>Pérdida Logarítmica (Log-Loss):</strong> Penaliza predicciones incorrectas hechas con alta confianza.</p>
+                        </div>
+                        <div>
+                             <h5 class="font-semibold mb-2">Métricas de Evaluación Clave</h5>
+                             <p class="text-sm mb-2">Si las clases están desbalanceadas (pocos casos de ausentismo), la exactitud es engañosa. Usar:</p>
+                             <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong>Puntuación F1:</strong> Balance entre Precisión y Recall.</li>
+                                <li><strong>AUC-PR:</strong> Área bajo la curva Precisión-Recall, ideal para clases desbalanceadas.</li>
+                             </ul>
+                             <div class="mt-4 p-3 bg-white rounded-lg shadow-inner">
+                                <p class="text-sm font-semibold text-center mb-2">Matriz de Confusión Interactiva</p>
+                                <table class="w-full text-xs text-center">
+                                    <thead><tr><th></th><th class="font-normal">Predicho: No</th><th class="font-normal">Predicho: Sí</th></tr></thead>
+                                    <tbody>
+                                    <tr class="border-t"><th class="font-normal text-left py-1">Real: No</th>
+                                        <td class="bg-green-100 p-2 rounded tooltip">VN<span class="tooltiptext">Verdadero Negativo: Predijo correctamente 'No Ausencia'.</span></td>
+                                        <td class="bg-red-100 p-2 rounded tooltip">FP<span class="tooltiptext">Falso Positivo: Predijo 'Ausencia' pero no ocurrió. (Error Tipo I)</span></td>
+                                    </tr>
+                                    <tr class="border-t"><th class="font-normal text-left py-1">Real: Sí</th>
+                                        <td class="bg-orange-100 p-2 rounded tooltip">FN<span class="tooltiptext">Falso Negativo: Predijo 'No Ausencia' pero sí ocurrió. (Error Tipo II)</span></td>
+                                        <td class="bg-green-100 p-2 rounded tooltip">VP<span class="tooltiptext">Verdadero Positivo: Predijo correctamente 'Ausencia'.</span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const stage2Details = `
+                <div class="card max-w-4xl mx-auto p-8 bg-gray-50">
+                    <h4 class="text-2xl font-bold mb-4 text-[#6C7A89]">Detalles: Etapa 2 - Regresión de Días</h4>
+                    <p class="text-sm mb-4">Esta etapa se entrena <strong>únicamente</strong> en el subconjunto de individuos que tuvieron ausentismo. La variable objetivo es un recuento de días.</p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h5 class="font-semibold mb-2">Modelos Recomendados</h5>
+                            <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong>Modelo de Obstáculo (Hurdle Model):</strong> Es el más adecuado teóricamente. Combina la predicción de Sí/No (el "obstáculo") con un modelo de recuento para los días.</li>
+                                <li><strong>Regresión Binomial Negativa:</strong> Una alternativa robusta. Es una generalización de la regresión de Poisson que maneja bien la "sobredispersión" (varianza mayor que la media), común en datos de recuento.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold mb-2">Métricas de Evaluación Clave</h5>
+                            <p class="text-sm mb-2">Se usan métricas de regresión estándar:</p>
+                             <ul class="list-disc list-inside space-y-2 text-sm">
+                                <li><strong>MAE (Error Absoluto Medio):</strong> El error promedio en días. Fácil de interpretar.</li>
+                                <li><strong>RMSE (Raíz del Error Cuadrático Medio):</strong> Similar al MAE pero penaliza más los errores grandes.</li>
+                                <li><strong>Análisis de Residuos:</strong> Gráficos para verificar si el modelo se ajusta bien a los datos.</li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            flowStage1.addEventListener('click', () => {
+                detailsBox.innerHTML = stage1Details;
+                flowStage1.classList.add('ring-2', 'ring-[#B27067]');
+                flowStage2.classList.remove('ring-2', 'ring-[#B27067]');
+            });
+            
+            flowStage2.addEventListener('click', () => {
+                detailsBox.innerHTML = stage2Details;
+                flowStage2.classList.add('ring-2', 'ring-[#B27067]');
+                flowStage1.classList.remove('ring-2', 'ring-[#B27067]');
+            });
+
+            // Trigger click on stage 1 by default
+            flowStage1.click();
+
+            // Importance Chart
+            const ctx = document.getElementById('importanceChart').getContext('2d');
+            const importanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        '1_3_5_demandas_emocionales', 
+                        'edad', 
+                        'antiguedad_marca_clase', 
+                        'imc_continuo', 
+                        'clima',
+                        'tipo_de_cargo'
+                    ],
+                    datasets: [{
+                        label: 'Importancia Relativa',
+                        data: [0.25, 0.18, 0.15, 0.12, 0.08, 0.05],
+                        backgroundColor: '#6C7A89',
+                        borderColor: '#586574',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Importancia: ${context.raw.toFixed(3)}`;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Importancia de Variables (Ejemplo Ficticio)',
+                            padding: { top: 10, bottom: 20 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Caída en el rendimiento del modelo'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

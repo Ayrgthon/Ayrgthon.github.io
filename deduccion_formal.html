@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deducción Formal - Codificación Jerárquica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        .latex-content {
+            font-family: 'Merriweather', serif;
+            line-height: 1.8;
+        }
+        .latex-content h1, .latex-content h2, .latex-content h3 {
+            font-family: 'Inter', sans-serif;
+        }
+        .katex { font-size: 1.1em; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center">
+                <a href="Ejemplo.html" class="text-gray-600 hover:text-gray-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Volver a la Guía
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        <article class="bg-white rounded-lg shadow-lg p-8 latex-content">
+            <h1 class="text-4xl font-bold mb-6 text-gray-800">Deducción Formal y Aplicación de la Codificación Jerárquica por Objetivo para Datos Limitados</h1>
+            
+            <div class="text-gray-600 italic mb-8 border-l-4 border-gray-200 pl-4">
+                Este documento presenta la deducción matemática formal de la codificación por objetivo regularizada y su extensión a estructuras jerárquicas. Se demuestra cómo esta técnica es particularmente adecuada para conjuntos de datos con un número muy bajo de observaciones (e.g., N=100) y variables categóricas con dependencias multinivel.
+            </div>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Introducción y Aplicación al Problema</h2>
+                <p class="mb-4">
+                    El desafío principal consiste en construir un modelo predictivo de ausentismo con solo 100 observaciones y variables categóricas que presentan una estructura jerárquica (e.g., \`Dominio Psicosocial\` \(\rightarrow\) \`Dimensión\` \(\rightarrow\) \`Ítem\`).
+                </p>
+                <p class="mb-4">
+                    Los métodos de codificación tradicionales como <strong>One-Hot Encoding</strong> son inviables, ya que generarían un número de columnas muy superior al número de observaciones, haciendo imposible que el modelo aprenda patrones generalizables.
+                </p>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Fundamento: Codificación por Objetivo y Regularización</h2>
+                <p class="mb-4">
+                    El punto de partida es la codificación por objetivo estándar (Target Encoding). La idea es reemplazar una categoría \(c\) por el valor promedio de la variable objetivo \(y\) para todas las observaciones que pertenecen a esa categoría.
+                </p>
+                <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <h3 class="text-xl font-semibold mb-3">Estimador de Máxima Verosimilitud (Ingenuo)</h3>
+                    <p class="mb-3">
+                        Sea \(y_i \in \{0, 1\}\) nuestra variable objetivo (e.g., ausentismo) y \(x_i\) una variable categórica. Para una categoría específica \(c\), el estimador más simple para la probabilidad de ausentismo es la media muestral:
+                    </p>
+                    <div class="text-center my-4">
+                        \[\hat{\mu}_c = \frac{\sum_{i: x_i=c} y_i}{n_c}\]
+                    </div>
+                    <p>donde \(n_c\) es el número de observaciones en la categoría \(c\).</p>
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Deducción de la Codificación Regularizada</h2>
+                <p class="mb-4">
+                    El valor codificado regularizado, \(\mu_{\text{reg}}(c)\), será una media ponderada entre la media de la categoría y el prior global:
+                </p>
+                <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <div class="text-center my-4">
+                        \[\mu_{\text{reg}}(c) = \lambda(n_c) \cdot \hat{\mu}_c + (1 - \lambda(n_c)) \cdot \mu_{\text{global}}\]
+                    </div>
+                    <p class="mb-3">donde \(\lambda(n_c)\) es un factor de ponderación que depende del número de muestras \(n_c\).</p>
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Extensión a Estructuras Jerárquicas</h2>
+                <p class="mb-4">
+                    La idea clave es que <strong>el prior para una categoría hija no es la media global, sino el valor ya regularizado de su categoría padre</strong>.
+                </p>
+                <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                    <h3 class="text-xl font-semibold mb-3">Fórmula General para Nivel \(l\)</h3>
+                    <div class="text-center my-4">
+                        \[\mu_{\text{reg}}^{(l)}(c_l) = \frac{n_{c_l} \cdot \hat{\mu}_{c_l} + k_l \cdot \mu_{\text{reg}}^{(l-1)}(\text{padre}(c_l))}{n_{c_l} + k_l}\]
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Aplicación a Variables Psicosociales</h2>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-3">Ejemplo: Jerarquía de Constructos</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-4">
+                        <li>Nivel 1: \`1constructo_intralaboral\`</li>
+                        <li>Nivel 2: \`1_1_2_relaciones_sociales_en_el_trabajo\`</li>
+                    </ul>
+                    <p>El proceso de codificación sería:</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>Calcular el valor regularizado para la categoría en \`1constructo_intralaboral\`</li>
+                        <li>Usar ese valor como prior para \`1_1_2_relaciones_sociales_en_el_trabajo\`</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Conclusión</h2>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <p class="mb-4">La codificación jerárquica por objetivo ofrece:</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong>Reducción de Dimensionalidad:</strong> Evita la explosión de columnas</li>
+                        <li><strong>Riqueza de Información:</strong> Cada característica es densa en información</li>
+                        <li><strong>Robustez:</strong> Previene el sobreajuste en categorías con pocas muestras</li>
+                    </ul>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ]
+            });
+        });
+    </script>
+</body>
+</html> 
