@@ -1,0 +1,282 @@
+/*==========================================================================
+Portfolio Custom Styles
+==========================================================================*/
+
+/* Header: igual que index */
+.header__area.all-page {
+    background: #030404;
+}
+
+/* Banner del portfolio */
+.portfolio-header {
+    padding-top: 200px;
+    padding-bottom: 100px;
+    background: #030404;
+    position: relative;
+    background-image: url('../img/banner.png');
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.portfolio-header-content {
+    padding-top: 145px;
+    padding-bottom: 130px;
+    text-align: center;
+}
+
+.portfolio-header-content h1 {
+    font-size: 120px;
+    line-height: 130px;
+    margin-bottom: 60px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    color: #FFFFFF;
+}
+
+.portfolio-header-content h1 span {
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: #FFFFFF;
+}
+
+.portfolio-header-content p {
+    font-size: 18px;
+    line-height: 28px;
+    color: #CFD0D0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Fondo negro para la grilla de proyectos */
+.modern-portfolio {
+    background: #030404;
+    padding: 100px 0;
+}
+
+/* Tarjetas de proyectos */
+.modern-portfolio-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    background: #121717;
+    transition: all 0.4s ease-out 0s;
+    height: 400px;
+}
+
+.modern-portfolio-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modern-portfolio-image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.modern-portfolio-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.4s ease-out 0s;
+}
+
+.modern-portfolio-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Nuevo degradado azul-negro */
+    background: linear-gradient(135deg, rgba(0,91,164,0.92), rgba(18,23,23,0.92) 80%);
+    opacity: 0;
+    transition: all 0.4s ease-out 0s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.modern-portfolio-item:hover .modern-portfolio-overlay {
+    opacity: 1;
+}
+
+.modern-portfolio-item:hover .modern-portfolio-image img {
+    transform: scale(1.1);
+}
+
+.modern-portfolio-content {
+    text-align: center;
+    color: #FFFFFF;
+    transform: translateY(20px);
+    transition: all 0.4s ease-out 0s;
+}
+
+.modern-portfolio-item:hover .modern-portfolio-content {
+    transform: translateY(0);
+}
+
+.project-category {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.modern-portfolio-content h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #FFFFFF;
+}
+
+.modern-portfolio-content h3 a {
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: all 0.3s ease-out 0s;
+}
+
+.modern-portfolio-content h3 a:hover {
+    color: #F8F8F8;
+}
+
+.modern-portfolio-content p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #F8F8F8;
+}
+
+.project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.project-tech span {
+    background: rgba(255,255,255,0.15);
+    color: #FFFFFF;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.project-link {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    color: #FFFFFF;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease-out 0s;
+}
+
+.project-link:hover {
+    background: #FFFFFF;
+    color: #F94D1D;
+    transform: scale(1.1);
+}
+
+/* Coming Soon Item */
+.coming-soon {
+    background: #121717;
+    border: 2px dashed #31444A;
+}
+.coming-soon-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6F7173;
+    text-align: center;
+    padding: 40px;
+}
+.coming-soon-content i {
+    font-size: 48px;
+    color: #F94D1D;
+    margin-bottom: 20px;
+}
+.coming-soon-content h4 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #CFD0D0;
+}
+.coming-soon-content p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #9FA0A1;
+}
+
+/* Call to Action */
+.portfolio-cta {
+    background: #121717;
+    padding: 60px;
+    border-radius: 15px;
+    text-align: center;
+    border: 1px solid #1E2323;
+}
+.portfolio-cta h3 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 20px;
+}
+.portfolio-cta p {
+    font-size: 16px;
+    color: #CFD0D0;
+    margin-bottom: 30px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+    .portfolio-header-content h1 {
+        font-size: 80px;
+        line-height: 90px;
+    }
+    .modern-portfolio-item {
+        height: 350px;
+    }
+}
+@media (max-width: 767px) {
+    .portfolio-header-content h1 {
+        font-size: 60px;
+        line-height: 70px;
+    }
+    .portfolio-header {
+        padding-top: 150px;
+        padding-bottom: 80px;
+    }
+    .portfolio-header-content {
+        padding-top: 100px;
+        padding-bottom: 80px;
+    }
+    .modern-portfolio-item {
+        height: 300px;
+    }
+    .portfolio-cta {
+        padding: 20px;
+    }
+    .portfolio-cta h3 {
+        font-size: 24px;
+    }
+} 
